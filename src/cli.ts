@@ -5,6 +5,7 @@ import { ensureVerifiedAccess, getCachedLicenseSummary, verifyAndCacheLicenseFro
 import { promptDesignSystem, promptProviders } from "./prompts/designSystem";
 import { runGeneration } from "./generation/runGeneration";
 import { Provider, SUPPORTED_PROVIDERS } from "./types";
+import { printBanner } from "./ui/banner";
 
 function parseProviderOption(raw?: string): Provider[] | null {
   if (!raw) {
@@ -52,10 +53,19 @@ async function generateLike(mode: "generated" | "updated" | "preview", options: 
 
 const program = new Command();
 
+const wantsHelp = process.argv.includes("--help") || process.argv.includes("-h");
+if (wantsHelp) {
+  printBanner();
+}
+
 program
   .name("typeui.sh")
   .description("Generate and update design-system skill markdown files for AI providers.")
   .version("0.1.0");
+
+program.hook("preAction", () => {
+  printBanner();
+});
 
 program
   .command("verify")
