@@ -43,10 +43,9 @@ Shared options:
 
 This CLI is gated by purchase verification.
 
-CLI environment variables:
+Verification endpoint:
 
-- `POLAR_VERIFY_URL`: base verification route (for example `http://localhost:3000/api/license/verify`).
-- `.env` is auto-loaded by the CLI (via `dotenv`), so local development can define `POLAR_VERIFY_URL` in project `.env`.
+- `https://typeui.sh/api/license/verify` (fixed)
 
 For `npx` distribution, do not require shared secrets in the CLI. Instead:
 

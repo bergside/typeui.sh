@@ -40,7 +40,7 @@ export async function verifyPurchaseWithPolar(licenseKey: string): Promise<Polar
     const message = error instanceof Error ? error.message : String(error);
     return {
       ok: false,
-      reason: `Could not reach license server at ${verifyUrl}: ${message}. Check POLAR_VERIFY_URL (include http:// or https://) and ensure your server is running.`
+      reason: `Could not reach license server at ${verifyUrl}: ${message}. Please ensure your network connection is available and try again.`
     };
   }
 
