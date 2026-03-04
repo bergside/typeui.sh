@@ -16,6 +16,22 @@ export interface DesignSystemInput {
   dontRules: string[];
 }
 
+export const DESIGN_SYSTEM_FIELDS = [
+  "productName",
+  "brandSummary",
+  "visualStyle",
+  "typographyScale",
+  "colorPalette",
+  "spacingScale",
+  "componentFamilies",
+  "accessibilityRequirements",
+  "writingTone",
+  "doRules",
+  "dontRules"
+] as const;
+
+export type DesignSystemField = (typeof DESIGN_SYSTEM_FIELDS)[number];
+
 export interface ProviderFile {
   provider: Provider;
   relativePath: string;

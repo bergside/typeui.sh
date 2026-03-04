@@ -16,7 +16,7 @@ export const ProviderSelectionSchema = z.array(z.enum(SUPPORTED_PROVIDERS)).min(
 
 export const DesignSystemSchema = z.object({
   productName: z.string().min(2, "Product name is too short."),
-  brandSummary: z.string().min(10, "Brand summary should describe visual identity."),
+  brandSummary: z.string(),
   visualStyle: z.string().min(3),
   typographyScale: z.string().min(3),
   colorPalette: z.string().min(3),
@@ -30,7 +30,7 @@ export const DesignSystemSchema = z.object({
 
 export const FlatDesignSystemPromptSchema = z.object({
   productName: z.string().min(2),
-  brandSummary: z.string().min(10),
+  brandSummary: z.string(),
   visualStyle: z.string().min(3),
   typographyScale: z.string().min(3),
   colorPalette: z.string().min(3),

@@ -4,7 +4,12 @@ import {
   FlatDesignSystemPromptSchema,
   ProviderSelectionSchema
 } from "../domain/designSystemSchema";
-import { DesignSystemInput, Provider, SUPPORTED_PROVIDERS } from "../types";
+import {
+  DesignSystemField,
+  DesignSystemInput,
+  Provider,
+  SUPPORTED_PROVIDERS
+} from "../types";
 
 const providerChoices: { name: string; value: Provider }[] = [
   { name: "Codex", value: "codex" },
@@ -12,6 +17,35 @@ const providerChoices: { name: string; value: Provider }[] = [
   { name: "Claude Code", value: "claude-code" },
   { name: "Open Code", value: "open-code" }
 ];
+
+const designFieldChoices: { name: string; value: DesignSystemField }[] = [
+  { name: "Product name", value: "productName" },
+  { name: "Brand summary", value: "brandSummary" },
+  { name: "Visual style", value: "visualStyle" },
+  { name: "Typography scale", value: "typographyScale" },
+  { name: "Color palette", value: "colorPalette" },
+  { name: "Spacing scale", value: "spacingScale" },
+  { name: "Component families", value: "componentFamilies" },
+  { name: "Accessibility requirements", value: "accessibilityRequirements" },
+  { name: "Writing tone", value: "writingTone" },
+  { name: "DO rules", value: "doRules" },
+  { name: "DON'T rules", value: "dontRules" }
+];
+
+const listFieldSet = new Set<DesignSystemField>(["componentFamilies", "doRules", "dontRules"]);
+
+function isListField(
+  field: DesignSystemField
+): field is "componentFamilies" | "doRules" | "dontRules" {
+  return listFieldSet.has(field);
+}
+
+function parseCsvList(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export async function promptProviders(): Promise<Provider[]> {
   const answers = await inquirer.prompt<{ providers: Provider[] }>([
@@ -98,6 +132,50 @@ export async function promptDesignSystem(defaultProductName = "typeui.sh"): Prom
 
   const normalized = FlatDesignSystemPromptSchema.parse(answers);
   return DesignSystemSchema.parse(normalized);
+}
+
+export async function promptDesignSystemFields(): Promise<DesignSystemField[]> {
+  const answers = await inquirer.prompt<{ fields: DesignSystemField[] }>([
+    {
+      type: "checkbox",
+      name: "fields",
+      message: "Select fields to update:",
+      choices: designFieldChoices,
+      validate: (value: unknown[]) => value.length > 0 || "Select at least one field."
+    }
+  ]);
+
+  return answers.fields;
+}
+
+export async function promptDesignSystemUpdates(
+  current: DesignSystemInput,
+  fields: DesignSystemField[]
+): Promise<Partial<DesignSystemInput>> {
+  const questions = fields.map((field) => ({
+    type: "input" as const,
+    name: field,
+    message:
+      `${designFieldChoices.find((choice) => choice.value === field)?.name ?? field}:` +
+      (isListField(field) ? " (comma-separated)" : ""),
+    default: isListField(field) ? current[field].join(", ") : current[field]
+  }));
+
+  const answers = await inquirer.prompt<Record<DesignSystemField, string>>(questions);
+  const updates: Partial<DesignSystemInput> = {};
+
+  for (const field of fields) {
+    const value = isListField(field) ? parseCsvList(answers[field]) : answers[field];
+    (updates as Record<string, unknown>)[field] = value;
+  }
+
+  const merged = DesignSystemSchema.parse({ ...current, ...updates });
+  const validatedUpdates: Partial<DesignSystemInput> = {};
+  for (const field of fields) {
+    (validatedUpdates as Record<string, unknown>)[field] = merged[field];
+  }
+
+  return validatedUpdates;
 }
 
 export function listSupportedProviders(): readonly string[] {

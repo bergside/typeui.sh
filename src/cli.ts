@@ -8,9 +8,15 @@ import {
   getCachedLicenseSummary,
   verifyAndCacheLicenseFromPrompt
 } from "./licensing/licenseService";
-import { promptDesignSystem, promptProviders } from "./prompts/designSystem";
+import {
+  promptDesignSystem,
+  promptDesignSystemFields,
+  promptDesignSystemUpdates,
+  promptProviders
+} from "./prompts/designSystem";
+import { loadExistingDesignSystem } from "./generation/existingDesignSystem";
 import { runGeneration } from "./generation/runGeneration";
-import { Provider, SUPPORTED_PROVIDERS } from "./types";
+import { DesignSystemInput, Provider, SUPPORTED_PROVIDERS } from "./types";
 import { printBanner } from "./ui/banner";
 
 function parseProviderOption(raw?: string): Provider[] | null {
@@ -47,7 +53,23 @@ function printResults(mode: "generated" | "updated" | "preview", results: Array<
 async function generateLike(mode: "generated" | "updated" | "preview", options: { providers?: string; dryRun?: boolean }) {
   await ensureVerifiedAccess();
   const providers = parseProviderOption(options.providers) ?? (await promptProviders());
-  const designSystem = await promptDesignSystem("typeui.sh");
+  let designSystem: DesignSystemInput;
+
+  if (mode === "updated") {
+    const existing = await loadExistingDesignSystem(process.cwd(), providers);
+    if (!existing) {
+      throw new Error(
+        "No existing managed design system found for the selected providers. Run `typeui.sh generate` first."
+      );
+    }
+
+    const fields = await promptDesignSystemFields();
+    const updates = await promptDesignSystemUpdates(existing, fields);
+    designSystem = { ...existing, ...updates };
+  } else {
+    designSystem = await promptDesignSystem("typeui.sh");
+  }
+
   const results = await runGeneration({
     projectRoot: process.cwd(),
     providers,
@@ -87,15 +109,6 @@ program
   .description("Show local cached license status.")
   .action(async () => {
     console.log(await getCachedLicenseSummary());
-  });
-
-program
-  .command("init")
-  .description("Verify license and generate provider skill files in the current project.")
-  .option("-p, --providers <providers>", "Comma-separated providers")
-  .option("--dry-run", "Preview file changes without writing")
-  .action(async (options) => {
-    await generateLike(options.dryRun ? "preview" : "generated", options);
   });
 
 program
