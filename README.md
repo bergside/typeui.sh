@@ -23,13 +23,13 @@ npx typeui.sh --help
 
 | Command | Description |
 | --- | --- |
-| `typeui.sh generate` | Run the interactive design system prompts and generate skill files. |
-| `typeui.sh update` | Update existing managed skill content in generated files. |
-| `typeui.sh pull <slug>` | Pull a registry skill and write it to selected provider paths (requires activated license). |
-| `typeui.sh list` | Choose one available registry spec, then pull it automatically (requires activated license). |
-| `typeui.sh verify` | Verify your license key (pro version) and cache local license status. |
-| `typeui.sh license` | Show local cached license status. |
-| `typeui.sh clear-cache` | Remove local cache state (`~/.typeui-sh`). |
+| `generate` | Run the interactive design system prompts and generate skill files. |
+| `update` | Update existing managed skill content in generated files. |
+| `pull <slug>` | Pull a registry skill and write it to selected provider paths (requires activated license). |
+| `list` | Choose one available registry spec, then pull it automatically (requires activated license). |
+| `verify` | Verify your license key (pro version) and cache local license status. |
+| `license` | Show local cached license status. |
+| `clear-cache` | Remove local cache state (`~/.typeui-sh`). |
 
 Shared options for `generate` and `update`:
 
