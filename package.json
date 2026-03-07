@@ -1,6 +1,6 @@
 {
   "name": "typeui.sh",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Generate design system specifications and style guides as skill files for AI coding providers",
   "main": "dist/cli.js",
   "bin": {

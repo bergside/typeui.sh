@@ -142,21 +142,6 @@ program.hook("preAction", () => {
 });
 
 program
-  .command("verify")
-  .description("Verify your license key and cache local license status.")
-  .action(async () => {
-    const record = await verifyAndCacheLicenseFromPrompt();
-    console.log(`License cached (${record.licenseKeyFingerprint}) until ${record.expiresAt}`);
-  });
-
-program
-  .command("license")
-  .description("Show local cached license status.")
-  .action(async () => {
-    console.log(await getCachedLicenseSummary());
-  });
-
-program
   .command("generate")
   .description("Generate provider skill files in the current project.")
   .option("-p, --providers <providers>", "Comma-separated providers")
@@ -190,6 +175,21 @@ program
   .option("--dry-run", "Preview file changes without writing")
   .action(async (options) => {
     await listLike(options);
+  });
+
+program
+  .command("verify")
+  .description("Verify your license key and cache local license status.")
+  .action(async () => {
+    const record = await verifyAndCacheLicenseFromPrompt();
+    console.log(`License cached (${record.licenseKeyFingerprint}) until ${record.expiresAt}`);
+  });
+
+program
+  .command("license")
+  .description("Show local cached license status.")
+  .action(async () => {
+    console.log(await getCachedLicenseSummary());
   });
 
 program
