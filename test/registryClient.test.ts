@@ -19,7 +19,7 @@ describe("pullSkillMarkdown", () => {
       });
     }) as typeof fetch;
 
-    const result = await pullSkillMarkdown("paper", "license_valid_123");
+    const result = await pullSkillMarkdown("paper");
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.markdown).toContain("## hello");
@@ -36,7 +36,7 @@ describe("pullSkillMarkdown", () => {
       });
     }) as typeof fetch;
 
-    const result = await pullSkillMarkdown("missing", "license_valid_123");
+    const result = await pullSkillMarkdown("missing");
     expect(result).toEqual({
       ok: false,
       reason: "not_found"
@@ -45,7 +45,7 @@ describe("pullSkillMarkdown", () => {
 
   it("rejects invalid slug before network request", async () => {
     global.fetch = vi.fn() as typeof fetch;
-    const result = await pullSkillMarkdown("Bad Slug", "license_valid_123");
+    const result = await pullSkillMarkdown("Bad Slug");
     expect(result.ok).toBe(false);
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -76,7 +76,7 @@ describe("listRegistrySpecs", () => {
       );
     }) as typeof fetch;
 
-    const result = await listRegistrySpecs("license_valid_123");
+    const result = await listRegistrySpecs();
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.specs[0]?.slug).toBe("paper");
@@ -84,7 +84,7 @@ describe("listRegistrySpecs", () => {
     }
   });
 
-  it("maps invalid license response", async () => {
+  it("maps forbidden response", async () => {
     global.fetch = vi.fn(async () => {
       return new Response(JSON.stringify({ ok: false, reason: "license_invalid" }), {
         status: 403,
@@ -94,7 +94,7 @@ describe("listRegistrySpecs", () => {
       });
     }) as typeof fetch;
 
-    const result = await listRegistrySpecs("license_invalid_123");
+    const result = await listRegistrySpecs();
     expect(result).toEqual({
       ok: false,
       reason: "license_invalid"

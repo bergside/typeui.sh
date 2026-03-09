@@ -60,20 +60,12 @@ async function tryReadFailureJson(response: Response): Promise<PullFailureBody |
   }
 }
 
-export async function pullSkillMarkdown(slug: string, licenseKey: string): Promise<RegistryPullResult> {
+export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResult> {
   const parsedSlug = RegistrySlugSchema.safeParse(slug);
   if (!parsedSlug.success) {
     return {
       ok: false,
       reason: parsedSlug.error.issues[0]?.message ?? "Invalid slug."
-    };
-  }
-
-  const normalizedLicenseKey = licenseKey.trim();
-  if (normalizedLicenseKey.length <= 5) {
-    return {
-      ok: false,
-      reason: "Invalid license key."
     };
   }
 
@@ -85,9 +77,7 @@ export async function pullSkillMarkdown(slug: string, licenseKey: string): Promi
       headers: {
         "content-type": "application/json"
       },
-      body: JSON.stringify({
-        licenseKey: normalizedLicenseKey
-      })
+      body: JSON.stringify({})
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -144,15 +134,7 @@ function mapSpecsFailure(status: number, reason?: string): string {
 
 export type RegistrySpecsResult = { ok: true; specs: RegistrySpec[] } | PullFailure;
 
-export async function listRegistrySpecs(licenseKey: string): Promise<RegistrySpecsResult> {
-  const normalizedLicenseKey = licenseKey.trim();
-  if (normalizedLicenseKey.length <= 5) {
-    return {
-      ok: false,
-      reason: "Invalid license key."
-    };
-  }
-
+export async function listRegistrySpecs(): Promise<RegistrySpecsResult> {
   const endpoint = getRegistrySpecsUrl();
   let response: Response;
   try {
@@ -161,9 +143,7 @@ export async function listRegistrySpecs(licenseKey: string): Promise<RegistrySpe
       headers: {
         "content-type": "application/json"
       },
-      body: JSON.stringify({
-        licenseKey: normalizedLicenseKey
-      })
+      body: JSON.stringify({})
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

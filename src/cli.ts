@@ -3,7 +3,6 @@ import path from "node:path";
 import { Command } from "commander";
 import {
   clearCachedLicenseState,
-  getVerifiedLicenseKey,
   getCachedLicenseSummary,
   verifyAndCacheLicenseFromPrompt
 } from "./licensing/licenseService";
@@ -89,8 +88,7 @@ async function pullLike(slug: string, options: { providers?: string; dryRun?: bo
   }
   const selectedProviders = parseProviderOption(options.providers) ?? (await promptProviders());
   const providers = [...new Set<Provider>([...ALWAYS_INCLUDED_PROVIDERS, ...selectedProviders])];
-  const licenseKey = await getVerifiedLicenseKey();
-  const pullResult = await pullSkillMarkdown(parsedSlug.data, licenseKey);
+  const pullResult = await pullSkillMarkdown(parsedSlug.data);
   if (!pullResult.ok) {
     throw new Error(`Registry pull failed: ${pullResult.reason}`);
   }
@@ -104,8 +102,7 @@ async function pullLike(slug: string, options: { providers?: string; dryRun?: bo
 }
 
 async function listLike(options: { providers?: string; dryRun?: boolean }) {
-  const licenseKey = await getVerifiedLicenseKey();
-  const specsResult = await listRegistrySpecs(licenseKey);
+  const specsResult = await listRegistrySpecs();
   if (!specsResult.ok) {
     throw new Error(`Registry specs failed: ${specsResult.reason}`);
   }
@@ -117,7 +114,7 @@ async function listLike(options: { providers?: string; dryRun?: boolean }) {
 
   const selectableSpecs = specsResult.specs.filter((spec) => spec.hasSkillMd);
   if (selectableSpecs.length === 0) {
-    throw new Error("No pullable registry specs available for this license.");
+    throw new Error("No pullable registry specs available.");
   }
 
   const selected = await promptRegistrySpecSelection(specsResult.specs);
@@ -170,7 +167,7 @@ program
 
 program
   .command("list")
-  .description("List available license-gated registry design system specs.")
+  .description("List available registry design system specs.")
   .option("-p, --providers <providers>", "Comma-separated providers")
   .option("--dry-run", "Preview file changes without writing")
   .action(async (options) => {

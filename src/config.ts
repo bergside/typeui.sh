@@ -24,3 +24,7 @@ export function getRegistryPullUrl(slug: string): string {
 export function getRegistrySpecsUrl(): string {
   return REGISTRY_SPECS_URL;
 }
+
+export function getDesignSystemUrl(slug: string): string {
+  return `${API_DOMAIN}/design-systems/${encodeURIComponent(slug)}`;
+}

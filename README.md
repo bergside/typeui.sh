@@ -25,8 +25,8 @@ npx typeui.sh --help
 | --- | --- |
 | `generate` | Run the interactive design system prompts and generate skill files. |
 | `update` | Update existing managed skill content in generated files. |
-| `pull <slug>` | Pull a registry skill and write it to selected provider paths (requires activated license). |
-| `list` | Choose one available registry spec, then pull it automatically (requires activated license). |
+| `pull <slug>` | Pull a registry skill and write it to selected provider paths. |
+| `list` | Show available registry specs (including design system links), then pull one automatically. |
 | `verify` | Verify your license key (pro version) and cache local license status. |
 | `license` | Show local cached license status. |
 | `clear-cache` | Remove local cache state (`~/.typeui-sh`). |
