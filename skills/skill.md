@@ -1,3 +1,8 @@
+---
+name: typeui-sh-cli
+description: Guide for agentic tools to use the typeui.sh CLI for generating, updating, listing, and pulling design system skill files.
+---
+
 # typeui.sh CLI Operator Skill
 
 ## Mission
