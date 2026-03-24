@@ -21,7 +21,7 @@ npx typeui.sh --help
 
 ## Design systems
 
-Check out all [design systems](https://typeui.sh/design-systems) that can be pulled into your project.
+Check out all [design systems](https://typeui.sh/design-skills) that can be pulled into your project.
 
 ## Available commands
 
