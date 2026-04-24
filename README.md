@@ -9,7 +9,7 @@
 Design system skill generator for agentic tools (ie. Claude Code, Open Code, Codex, Cursor, etc)
 ```
 
-[typeui.sh](https://www.typeui.sh) is an open-source command line interface (CLI) that generates, updates, and can download skill.md files with design system specifications to instruct agentic tools and LLM's to use a certain design when building interfaces.
+[typeui.sh](https://www.typeui.sh) is an open-source command line interface (CLI) that generates, updates, and can download `SKILL.md` or `DESIGN.md` files with design system specifications to instruct agentic tools and LLM's to use a certain design when building interfaces.
 
 ## Getting started
 
@@ -27,10 +27,11 @@ Check out all [design systems](https://typeui.sh/design-skills) that can be pull
 
 | Command | Description |
 | --- | --- |
-| `generate` | Run the interactive design system prompts and generate skill files. |
-| `update` | Update existing managed skill content in generated files. |
-| `pull <slug>` | Pull a registry skill from `bergside/awesome-design-skills` and write it to selected provider paths. |
+| `generate` | Run interactive prompts, choose `SKILL.md` or `DESIGN.md`, then generate output files. |
+| `update` | Run interactive prompts, choose `SKILL.md` or `DESIGN.md`, then update existing output files. |
+| `pull <slug>` | Pull a registry markdown file from `bergside/awesome-design-skills` (`SKILL.md` -> provider paths, `DESIGN.md` -> project root `DESIGN.md`). |
 | `list` | Show available registry specs from `bergside/awesome-design-skills` (with typeui.sh preview links), then pull one automatically. |
+| `randomize` | Generate a fully randomized local design system and write `SKILL.md` or `DESIGN.md` outputs. |
 
 ## Design Skill File Structure
 
@@ -66,8 +67,13 @@ Then use the commands in your terminal:
 ```
 node dist/cli.js --help
 node dist/cli.js generate
+node dist/cli.js generate --format design
+node dist/cli.js randomize
+node dist/cli.js randomize --format design
 node dist/cli.js list
 node dist/cli.js pull [slug]
+node dist/cli.js pull [slug] --format design
+node dist/cli.js list --format design
 ```
 
 ## License

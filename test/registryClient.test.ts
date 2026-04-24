@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getRegistrySpecsUrl } from "../src/config";
-import { listRegistrySpecs, pullSkillMarkdown } from "../src/registry/registryClient";
+import { listRegistrySpecs, pullRegistryMarkdown, pullSkillMarkdown } from "../src/registry/registryClient";
 
 const originalFetch = global.fetch;
 
@@ -9,8 +9,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("pullSkillMarkdown", () => {
-  it("returns markdown on successful registry response", async () => {
+describe("pullRegistryMarkdown", () => {
+  it("returns markdown on successful skill pull response", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -40,7 +40,7 @@ describe("pullSkillMarkdown", () => {
       );
     global.fetch = fetchMock as typeof fetch;
 
-    const result = await pullSkillMarkdown("paper");
+    const result = await pullRegistryMarkdown("paper", "skill");
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.markdown).toContain("## hello");
@@ -61,7 +61,52 @@ describe("pullSkillMarkdown", () => {
     );
   });
 
-  it("accepts text/plain markdown responses from raw GitHub", async () => {
+  it("pulls design markdown from explicit designPath when available", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            paper: {
+              slug: "paper",
+              name: "Paper",
+              skillPath: "skills/paper/SKILL.md",
+              designPath: "skills/paper/DESIGN.md"
+            }
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json"
+            }
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response("## design", {
+          status: 200,
+          headers: {
+            "content-type": "text/plain; charset=utf-8"
+          }
+        })
+      );
+    global.fetch = fetchMock as typeof fetch;
+
+    const result = await pullRegistryMarkdown("paper", "design");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.markdown).toContain("## design");
+    }
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://raw.githubusercontent.com/bergside/awesome-design-skills/main/skills/paper/DESIGN.md",
+      expect.objectContaining({
+        method: "GET"
+      })
+    );
+  });
+
+  it("infers design path from skillPath when designPath is missing", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -82,20 +127,27 @@ describe("pullSkillMarkdown", () => {
         )
       )
       .mockResolvedValueOnce(
-        new Response("## hello", {
+        new Response("## inferred", {
           status: 200,
           headers: {
-            "content-type": "text/plain; charset=utf-8"
+            "content-type": "text/markdown; charset=utf-8"
           }
         })
       );
     global.fetch = fetchMock as typeof fetch;
 
-    const result = await pullSkillMarkdown("paper");
+    const result = await pullRegistryMarkdown("paper", "design");
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.markdown).toContain("## hello");
+      expect(result.markdown).toContain("## inferred");
     }
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://raw.githubusercontent.com/bergside/awesome-design-skills/main/skills/paper/DESIGN.md",
+      expect.objectContaining({
+        method: "GET"
+      })
+    );
   });
 
   it("returns not_found when slug does not exist in index", async () => {
@@ -117,7 +169,7 @@ describe("pullSkillMarkdown", () => {
       );
     }) as typeof fetch;
 
-    const result = await pullSkillMarkdown("missing");
+    const result = await pullRegistryMarkdown("missing", "skill");
     expect(result).toEqual({
       ok: false,
       reason: "not_found"
@@ -152,23 +204,85 @@ describe("pullSkillMarkdown", () => {
       }));
     global.fetch = fetchMock as typeof fetch;
 
-    const result = await pullSkillMarkdown("paper");
+    const result = await pullRegistryMarkdown("paper", "design");
     expect(result).toEqual({
       ok: false,
       reason: "not_found"
     });
   });
 
+  it("returns an error when selected format has no markdown path", async () => {
+    global.fetch = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          paper: {
+            slug: "paper",
+            name: "Paper",
+            skillPath: ""
+          }
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json"
+          }
+        }
+      );
+    }) as typeof fetch;
+
+    const result = await pullRegistryMarkdown("paper", "design");
+    expect(result).toEqual({
+      ok: false,
+      reason: "No design markdown path found for slug 'paper'."
+    });
+  });
+
   it("rejects invalid slug before network request", async () => {
     global.fetch = vi.fn() as typeof fetch;
-    const result = await pullSkillMarkdown("Bad Slug");
+    const result = await pullRegistryMarkdown("Bad Slug", "skill");
     expect(result.ok).toBe(false);
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
 
+describe("pullSkillMarkdown", () => {
+  it("keeps backward compatibility for skill pulls", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            paper: {
+              slug: "paper",
+              name: "Paper",
+              skillPath: "skills/paper/SKILL.md"
+            }
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json"
+            }
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response("## hello", {
+          status: 200,
+          headers: {
+            "content-type": "text/markdown; charset=utf-8"
+          }
+        })
+      );
+    global.fetch = fetchMock as typeof fetch;
+
+    const result = await pullSkillMarkdown("paper");
+    expect(result.ok).toBe(true);
+  });
+});
+
 describe("listRegistrySpecs", () => {
-  it("returns parsed specs for valid response", async () => {
+  it("returns parsed specs and both skill/design availability flags", async () => {
     global.fetch = vi.fn(async () => {
       return new Response(
         JSON.stringify({
@@ -180,7 +294,8 @@ describe("listRegistrySpecs", () => {
           simple: {
             slug: "simple",
             name: "Simple",
-            skillPath: "skills/simple/SKILL.md"
+            skillPath: "skills/simple/SKILL.md",
+            designPath: "skills/simple/DESIGN.md"
           },
           noSkill: {
             slug: "no-skill",
@@ -205,13 +320,15 @@ describe("listRegistrySpecs", () => {
         expect.objectContaining({
           slug: "paper",
           hasSkillMd: true,
+          hasDesignMd: true,
           previewUrl: "https://github.com/bergside/awesome-design-skills/tree/main/skills/paper"
         })
       );
       expect(result.specs[2]).toEqual(
         expect.objectContaining({
           slug: "no-skill",
-          hasSkillMd: false
+          hasSkillMd: false,
+          hasDesignMd: false
         })
       );
     }
@@ -223,7 +340,8 @@ describe("listRegistrySpecs", () => {
         JSON.stringify({
           paper: {
             slug: "paper",
-            name: "Paper"
+            name: "Paper",
+            designPath: 123
           }
         }),
         {

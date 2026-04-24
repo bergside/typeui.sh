@@ -1,10 +1,11 @@
-import { upsertManagedSkillFile } from "../io/updateSkillFile";
-import { PROVIDER_DETAILS, Provider } from "../types";
+import { upsertManagedSkillFile, writeMarkdownFile } from "../io/updateSkillFile";
+import { getProviderOutputPath, Provider, PullFormat } from "../types";
 
 export interface PullWriteOptions {
   projectRoot: string;
-  providers: Provider[];
+  providers?: Provider[];
   markdown: string;
+  format?: PullFormat;
   dryRun?: boolean;
 }
 
@@ -14,11 +15,33 @@ export interface PullWriteResult {
 }
 
 export async function runPull(options: PullWriteOptions): Promise<PullWriteResult[]> {
+  const format = options.format ?? "skill";
+
+  if (format === "design") {
+    const result = await writeMarkdownFile(
+      options.projectRoot,
+      "DESIGN.md",
+      options.markdown,
+      options.dryRun ?? false
+    );
+    return [
+      {
+        filePath: result.absPath,
+        changed: result.changed
+      }
+    ];
+  }
+
+  const providers = options.providers ?? [];
+  if (providers.length === 0) {
+    throw new Error("No providers selected for skill format.");
+  }
+
   const results: PullWriteResult[] = [];
   const seenPaths = new Set<string>();
 
-  for (const provider of options.providers) {
-    const relativePath = PROVIDER_DETAILS[provider].relativePath;
+  for (const provider of providers) {
+    const relativePath = getProviderOutputPath(provider, format);
     if (seenPaths.has(relativePath)) {
       continue;
     }

@@ -1,5 +1,6 @@
 import { getDesignSystemUrl, getRegistryPullUrl, getRegistrySpecsUrl } from "../config";
 import { RegistrySlugSchema } from "../domain/designSystemSchema";
+import { PullFormat } from "../types";
 
 interface PullFailure {
   ok: false;
@@ -19,12 +20,14 @@ export interface RegistrySpec {
   image: string;
   previewUrl: string;
   hasSkillMd: boolean;
+  hasDesignMd: boolean;
 }
 
 interface RegistryIndexEntry {
   slug: string;
   name: string;
   skillPath: string;
+  designPath: string;
 }
 
 type RegistryIndex = Record<string, RegistryIndexEntry>;
@@ -51,13 +54,20 @@ function parseRegistryIndex(payload: unknown): RegistryIndex | null {
       return null;
     }
     const candidate = rawValue as Partial<RegistryIndexEntry>;
-    if (typeof candidate.slug !== "string" || typeof candidate.name !== "string" || typeof candidate.skillPath !== "string") {
+    if (typeof candidate.slug !== "string" || typeof candidate.name !== "string") {
+      return null;
+    }
+    if (candidate.skillPath !== undefined && typeof candidate.skillPath !== "string") {
+      return null;
+    }
+    if (candidate.designPath !== undefined && typeof candidate.designPath !== "string") {
       return null;
     }
     index[key] = {
       slug: candidate.slug,
       name: candidate.name,
-      skillPath: candidate.skillPath
+      skillPath: candidate.skillPath ?? "",
+      designPath: candidate.designPath ?? ""
     };
   }
 
@@ -113,7 +123,28 @@ async function fetchRegistryIndex(): Promise<{ ok: true; index: RegistryIndex } 
   };
 }
 
-export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResult> {
+function inferDesignPathFromSkillPath(skillPath: string): string {
+  const normalizedSkillPath = skillPath.trim();
+  if (!normalizedSkillPath.endsWith("SKILL.md")) {
+    return "";
+  }
+  return normalizedSkillPath.replace(/SKILL\.md$/, "DESIGN.md");
+}
+
+function resolveRegistryMarkdownPath(entry: RegistryIndexEntry, format: PullFormat): string {
+  if (format === "skill") {
+    return entry.skillPath.trim();
+  }
+
+  const explicitDesignPath = entry.designPath.trim();
+  if (explicitDesignPath) {
+    return explicitDesignPath;
+  }
+
+  return inferDesignPathFromSkillPath(entry.skillPath);
+}
+
+export async function pullRegistryMarkdown(slug: string, format: PullFormat): Promise<RegistryPullResult> {
   const parsedSlug = RegistrySlugSchema.safeParse(slug);
   if (!parsedSlug.success) {
     return {
@@ -134,14 +165,16 @@ export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResul
       reason: "not_found"
     };
   }
-  if (!entry.skillPath.trim()) {
+
+  const markdownPath = resolveRegistryMarkdownPath(entry, format);
+  if (!markdownPath) {
     return {
       ok: false,
-      reason: `No skill markdown path found for slug '${parsedSlug.data}'.`
+      reason: `No ${format} markdown path found for slug '${parsedSlug.data}'.`
     };
   }
 
-  const endpoint = getRegistryPullUrl(entry.skillPath);
+  const endpoint = getRegistryPullUrl(markdownPath);
   let response: Response;
   try {
     response = await fetch(endpoint, {
@@ -161,7 +194,7 @@ export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResul
   if (!response.ok) {
     return {
       ok: false,
-      reason: mapRegistryHttpFailure(response.status, `fetching markdown for '${parsedSlug.data}'`)
+      reason: mapRegistryHttpFailure(response.status, `fetching ${format} markdown for '${parsedSlug.data}'`)
     };
   }
 
@@ -185,6 +218,10 @@ export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResul
   return { ok: true, markdown };
 }
 
+export async function pullSkillMarkdown(slug: string): Promise<RegistryPullResult> {
+  return pullRegistryMarkdown(slug, "skill");
+}
+
 export type RegistrySpecsResult = { ok: true; specs: RegistrySpec[] } | PullFailure;
 
 export async function listRegistrySpecs(): Promise<RegistrySpecsResult> {
@@ -198,7 +235,8 @@ export async function listRegistrySpecs(): Promise<RegistrySpecsResult> {
     slug: entry.slug,
     image: "",
     previewUrl: getDesignSystemUrl(entry.slug),
-    hasSkillMd: Boolean(entry.skillPath.trim())
+    hasSkillMd: Boolean(entry.skillPath.trim()),
+    hasDesignMd: Boolean(resolveRegistryMarkdownPath(entry, "design"))
   }));
 
   return {

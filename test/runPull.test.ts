@@ -49,4 +49,42 @@ describe("runPull", () => {
     const content = await fs.readFile(path.join(root, ".trae/skills/design-system/SKILL.md"), "utf8");
     expect(content).toContain("deduped");
   });
+
+  it("writes design markdown to DESIGN.md when format is design", async () => {
+    const root = await makeTmpDir();
+    const markdown = [
+      "---",
+      "name: Paper",
+      "---",
+      "",
+      "## Overview",
+      "",
+      "Hello design"
+    ].join("\n");
+
+    const results = await runPull({
+      projectRoot: root,
+      markdown,
+      format: "design"
+    });
+
+    expect(results).toHaveLength(1);
+    const designContent = await fs.readFile(path.join(root, "DESIGN.md"), "utf8");
+    expect(designContent).toContain("## Overview");
+    expect(designContent).toContain("Hello design");
+  });
+
+  it("ignores providers and writes design markdown once", async () => {
+    const root = await makeTmpDir();
+    const results = await runPull({
+      projectRoot: root,
+      providers: ["trae", "trae-cn"],
+      markdown: "# Design",
+      format: "design"
+    });
+
+    expect(results).toHaveLength(1);
+    const content = await fs.readFile(path.join(root, "DESIGN.md"), "utf8");
+    expect(content).toContain("# Design");
+  });
 });

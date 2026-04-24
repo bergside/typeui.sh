@@ -6,8 +6,8 @@ export const GITHUB_REGISTRY_RAW_BASE_URL =
   "https://raw.githubusercontent.com/bergside/awesome-design-skills/main";
 export const REGISTRY_SPECS_URL = `${GITHUB_REGISTRY_RAW_BASE_URL}/skills/index.json`;
 
-export function getRegistryPullUrl(skillPath: string): string {
-  const encodedPath = skillPath
+export function getRegistryPullUrl(markdownPath: string): string {
+  const encodedPath = markdownPath
     .split("/")
     .filter(Boolean)
     .map((segment) => encodeURIComponent(segment))
@@ -24,5 +24,5 @@ export function getDesignSystemUrl(slug: string): string {
 }
 
 export function getDesignSystemPreviewUrl(slug: string): string {
-  return `${API_DOMAIN}/design-systems/${encodeURIComponent(slug)}`;
+  return `${API_DOMAIN}/design-skills/${encodeURIComponent(slug)}`;
 }

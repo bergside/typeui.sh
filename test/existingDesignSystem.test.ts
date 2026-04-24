@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseManagedDesignSystem, parseSkillMetadata } from "../src/generation/existingDesignSystem";
-import { createManagedSkillBody, createManagedSkillFile } from "../src/renderers/shared";
+import { parseDesignMarkdown, parseManagedDesignSystem, parseSkillMetadata } from "../src/generation/existingDesignSystem";
+import { createDesignMarkdownFile, createManagedSkillBody, createManagedSkillFile } from "../src/renderers/shared";
 import { DesignSystemInput } from "../src/types";
 
 const sampleDesign: DesignSystemInput = {
@@ -35,6 +35,17 @@ describe("parseManagedDesignSystem", () => {
 
   it("returns null when managed block is missing", () => {
     expect(parseManagedDesignSystem("# Manual only")).toBeNull();
+  });
+});
+
+describe("parseDesignMarkdown", () => {
+  it("parses generated DESIGN.md content", () => {
+    const content = createDesignMarkdownFile(sampleDesign);
+    expect(parseDesignMarkdown(content)).toEqual(sampleDesign);
+  });
+
+  it("returns null when DESIGN.md format is invalid", () => {
+    expect(parseDesignMarkdown("# invalid")).toBeNull();
   });
 });
 

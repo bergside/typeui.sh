@@ -50,6 +50,12 @@ function extractSection(body: string, title: string, nextTitle: string): string 
   return match?.[1]?.trim() ?? null;
 }
 
+function extractSectionToEnd(body: string, title: string): string | null {
+  const pattern = new RegExp(`${escapeRegExp(title)}\\n([\\s\\S]*)`);
+  const match = body.match(pattern);
+  return match?.[1]?.trim() ?? null;
+}
+
 function extractListSection(body: string, title: string, nextTitle: string): string[] | null {
   const text = extractSection(body, title, nextTitle);
   if (!text) {
@@ -63,6 +69,11 @@ function extractListSection(body: string, title: string, nextTitle: string): str
 
 function extractStyleValue(body: string, prefix: string): string | null {
   const match = body.match(new RegExp(`^- ${escapeRegExp(prefix)}: (.+)$`, "m"));
+  return match?.[1]?.trim() ?? null;
+}
+
+function extractDesignStyleValue(body: string, label: string): string | null {
+  const match = body.match(new RegExp(`^- \\*\\*${escapeRegExp(label)}:\\*\\* (.+)$`, "m"));
   return match?.[1]?.trim() ?? null;
 }
 
@@ -112,6 +123,46 @@ export function parseManagedDesignSystem(content: string): DesignSystemInput | n
   });
 }
 
+export function parseDesignMarkdown(content: string): DesignSystemInput | null {
+  const frontmatter = extractFrontmatter(content);
+  if (!frontmatter) {
+    return null;
+  }
+
+  const productNameRaw = parseFrontmatterField(frontmatter, "name");
+  const productName = productNameRaw ? parseQuotedYamlValue(productNameRaw) : "";
+  const brandSummary = extractSection(content, "## Overview", "## Style Foundations");
+  const visualStyle = extractDesignStyleValue(content, "Visual style");
+  const typographyScale = extractDesignStyleValue(content, "Typography scale");
+  const colorPalette = extractDesignStyleValue(content, "Color palette");
+  const spacingScale = extractDesignStyleValue(content, "Spacing scale");
+  const accessibilityRequirements = extractSection(content, "## Accessibility", "## Writing Tone");
+  const writingTone = extractSection(content, "## Writing Tone", "## Rules: Do");
+  const doRules = extractListSection(content, "## Rules: Do", "## Rules: Don't");
+  const dontText = extractSectionToEnd(content, "## Rules: Don't");
+  const dontRules = dontText
+    ? dontText
+        .split("\n")
+        .map((line) => line.replace(/^- /, "").trim())
+        .filter(Boolean)
+    : null;
+
+  const parsed = DesignSystemSchema.safeParse({
+    productName,
+    brandSummary: brandSummary ?? "",
+    visualStyle: visualStyle ?? "",
+    typographyScale: typographyScale ?? "",
+    colorPalette: colorPalette ?? "",
+    spacingScale: spacingScale ?? "",
+    accessibilityRequirements: accessibilityRequirements ?? "",
+    writingTone: writingTone ?? "",
+    doRules: doRules ?? [],
+    dontRules: dontRules ?? []
+  });
+
+  return parsed.success ? parsed.data : null;
+}
+
 export function parseSkillMetadata(content: string): SkillMetadata | null {
   const frontmatter = extractFrontmatter(content);
   if (!frontmatter) {
@@ -157,6 +208,20 @@ export async function loadExistingDesignSystem(
       if (e.code !== "ENOENT") {
         throw error;
       }
+    }
+  }
+  return null;
+}
+
+export async function loadExistingDesignMarkdown(projectRoot: string): Promise<DesignSystemInput | null> {
+  const absPath = path.resolve(projectRoot, "DESIGN.md");
+  try {
+    const content = await fs.readFile(absPath, "utf8");
+    return parseDesignMarkdown(content);
+  } catch (error) {
+    const e = error as NodeJS.ErrnoException;
+    if (e.code !== "ENOENT") {
+      throw error;
     }
   }
   return null;

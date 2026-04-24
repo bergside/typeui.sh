@@ -143,6 +143,7 @@ export const PROVIDER_DETAILS = {
 } as const;
 
 export type Provider = keyof typeof PROVIDER_DETAILS;
+export type PullFormat = "skill" | "design";
 export const SUPPORTED_PROVIDERS = Object.keys(PROVIDER_DETAILS) as Provider[];
 export const ALWAYS_INCLUDED_PROVIDERS = SUPPORTED_PROVIDERS.filter(
   (provider) => Boolean((PROVIDER_DETAILS[provider] as { alwaysIncluded?: boolean }).alwaysIncluded)
@@ -150,6 +151,14 @@ export const ALWAYS_INCLUDED_PROVIDERS = SUPPORTED_PROVIDERS.filter(
 export const OPTIONAL_PROVIDERS = SUPPORTED_PROVIDERS.filter(
   (provider) => !Boolean((PROVIDER_DETAILS[provider] as { alwaysIncluded?: boolean }).alwaysIncluded)
 ) as Provider[];
+
+export function getProviderOutputPath(provider: Provider, format: PullFormat): string {
+  const skillPath = PROVIDER_DETAILS[provider].relativePath;
+  if (format === "skill") {
+    return skillPath;
+  }
+  return skillPath.replace(/\/SKILL\.md$/, "/DESIGN.md");
+}
 
 export interface DesignSystemInput {
   productName: string;

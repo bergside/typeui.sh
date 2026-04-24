@@ -72,4 +72,6 @@ export const RegistrySlugSchema = z
   .max(100, "Slug is too long.")
   .regex(/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/, "Slug must contain only lowercase letters, numbers, dashes, or underscores.");
 
+export const PullFormatSchema = z.enum(["skill", "design"]);
+
 export type DesignSystemSchemaType = z.infer<typeof DesignSystemSchema>;

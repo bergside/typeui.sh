@@ -85,6 +85,91 @@ function escapeYamlString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function parseKeyValuePairs(value: string): Record<string, string> {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce<Record<string, string>>((acc, part) => {
+      const [rawKey, ...rawValueParts] = part.split("=");
+      const key = rawKey?.trim().toLowerCase();
+      const rawValue = rawValueParts.join("=").trim();
+      if (key && rawValue) {
+        acc[key] = rawValue;
+      }
+      return acc;
+    }, {});
+}
+
+function parseTypographyMetadata(typographyScale: string): {
+  sourceScale: string;
+  primary: string;
+  display: string;
+  mono: string;
+  weights: string;
+} {
+  const sourceScale = typographyScale.split("|")[0]?.trim() || "12/14/16/20/24/32";
+  const fontsMatch = typographyScale.match(/\|\s*Fonts:\s*([^|]+)/i);
+  const fontPairs = parseKeyValuePairs(fontsMatch?.[1] ?? "");
+  const weightsMatch = typographyScale.match(/weights\s*=\s*([^|]+)/i);
+
+  return {
+    sourceScale,
+    primary: fontPairs.primary ?? "Public Sans",
+    display: fontPairs.display ?? fontPairs.primary ?? "Public Sans",
+    mono: fontPairs.mono ?? "Space Grotesk",
+    weights: weightsMatch?.[1]?.trim() ?? "400, 500, 600, 700"
+  };
+}
+
+function parseColorTokens(colorPalette: string): {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  neutral: string;
+  success: string;
+  warning: string;
+  danger: string;
+  surface: string;
+  text: string;
+} {
+  const tokensMatch = colorPalette.match(/\|\s*Tokens:\s*([^|]+)/i);
+  const tokenPairs = parseKeyValuePairs(tokensMatch?.[1] ?? "");
+  const primary = tokenPairs.primary ?? "#1A1C1E";
+  const secondary = tokenPairs.secondary ?? "#6C7278";
+  const surface = tokenPairs.surface ?? "#F7F5F2";
+  const text = tokenPairs.text ?? "#1A1C1E";
+
+  return {
+    primary,
+    secondary,
+    tertiary: tokenPairs.tertiary ?? secondary,
+    neutral: tokenPairs.neutral ?? surface,
+    success: tokenPairs.success ?? "#16A34A",
+    warning: tokenPairs.warning ?? "#D97706",
+    danger: tokenPairs.danger ?? "#DC2626",
+    surface,
+    text
+  };
+}
+
+function deriveSpacingTokens(spacingScale: string): { sm: string; md: string } {
+  const numericValues = spacingScale.match(/\d+/g)?.map((value) => Number(value)) ?? [];
+  if (numericValues.length >= 2) {
+    return {
+      sm: `${numericValues[0]}px`,
+      md: `${numericValues[1]}px`
+    };
+  }
+  if (/compact/i.test(spacingScale)) {
+    return { sm: "4px", md: "8px" };
+  }
+  if (/comfortable/i.test(spacingScale)) {
+    return { sm: "8px", md: "16px" };
+  }
+  return { sm: "8px", md: "16px" };
+}
+
 export function createSkillFrontmatter(metadata: SkillMetadata): string {
   return [
     "---",
@@ -102,4 +187,66 @@ export function createManagedSkillFile(
   metadata: SkillMetadata
 ): string {
   return `${createSkillFrontmatter(metadata)}\n\n${createManagedSkillBody(providerTitle, design)}`;
+}
+
+export function createDesignMarkdownFile(design: DesignSystemInput): string {
+  const typography = parseTypographyMetadata(design.typographyScale);
+  const colors = parseColorTokens(design.colorPalette);
+  const spacing = deriveSpacingTokens(design.spacingScale);
+
+  return [
+    "---",
+    `name: "${escapeYamlString(design.productName)}"`,
+    "colors:",
+    `  primary: "${colors.primary}"`,
+    `  secondary: "${colors.secondary}"`,
+    `  tertiary: "${colors.tertiary}"`,
+    `  neutral: "${colors.neutral}"`,
+    `  success: "${colors.success}"`,
+    `  warning: "${colors.warning}"`,
+    `  danger: "${colors.danger}"`,
+    `  surface: "${colors.surface}"`,
+    `  text: "${colors.text}"`,
+    "typography:",
+    "  h1:",
+    `    fontFamily: "${escapeYamlString(typography.display)}"`,
+    "    fontSize: 3rem",
+    "  body-md:",
+    `    fontFamily: "${escapeYamlString(typography.primary)}"`,
+    "    fontSize: 1rem",
+    "  label-caps:",
+    `    fontFamily: "${escapeYamlString(typography.mono)}"`,
+    "    fontSize: 0.75rem",
+    `  sourceScale: "${escapeYamlString(typography.sourceScale)}"`,
+    `  weights: "${escapeYamlString(typography.weights)}"`,
+    "rounded:",
+    "  sm: 4px",
+    "  md: 8px",
+    "spacing:",
+    `  sm: ${spacing.sm}`,
+    `  md: ${spacing.md}`,
+    `  sourceScale: "${escapeYamlString(design.spacingScale)}"`,
+    "---",
+    "",
+    "## Overview",
+    design.brandSummary,
+    "",
+    "## Style Foundations",
+    `- **Visual style:** ${design.visualStyle}`,
+    `- **Typography scale:** ${design.typographyScale}`,
+    `- **Color palette:** ${design.colorPalette}`,
+    `- **Spacing scale:** ${design.spacingScale}`,
+    "",
+    "## Accessibility",
+    design.accessibilityRequirements,
+    "",
+    "## Writing Tone",
+    design.writingTone,
+    "",
+    "## Rules: Do",
+    list(design.doRules),
+    "",
+    "## Rules: Don't",
+    list(design.dontRules)
+  ].join("\n");
 }

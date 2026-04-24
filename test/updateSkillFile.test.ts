@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { upsertManagedSkillFile } from "../src/io/updateSkillFile";
+import { upsertManagedSkillFile, writeMarkdownFile } from "../src/io/updateSkillFile";
 
 const tmpDirs: string[] = [];
 const localTmpRoot = path.join(process.cwd(), ".tmp-tests");
@@ -132,5 +132,29 @@ describe("upsertManagedSkillFile", () => {
     expect(content).toContain('description: "New description"');
     expect(content).toContain("new content");
     expect(content).not.toContain("old-skill");
+  });
+});
+
+describe("writeMarkdownFile", () => {
+  it("creates a markdown file when missing", async () => {
+    const root = await makeTmpDir();
+    const result = await writeMarkdownFile(root, "cursor/skills/design-system/DESIGN.md", "# Hello");
+    expect(result.changed).toBe(true);
+    const content = await fs.readFile(result.absPath, "utf8");
+    expect(content).toBe("# Hello\n");
+  });
+
+  it("replaces existing markdown content", async () => {
+    const root = await makeTmpDir();
+    const rel = "cursor/skills/design-system/DESIGN.md";
+    const abs = path.join(root, rel);
+    await fs.mkdir(path.dirname(abs), { recursive: true });
+    await fs.writeFile(abs, "old\n", "utf8");
+
+    const result = await writeMarkdownFile(root, rel, "new");
+    expect(result.changed).toBe(true);
+
+    const content = await fs.readFile(abs, "utf8");
+    expect(content).toBe("new\n");
   });
 });

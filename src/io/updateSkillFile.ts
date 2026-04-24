@@ -87,3 +87,32 @@ export async function upsertManagedSkillFile(
 
   return { absPath, changed };
 }
+
+export async function writeMarkdownFile(
+  projectRoot: string,
+  relativePath: string,
+  content: string,
+  dryRun = false
+): Promise<{ absPath: string; changed: boolean }> {
+  const absPath = path.resolve(projectRoot, relativePath);
+  await fs.mkdir(path.dirname(absPath), { recursive: true });
+
+  let existing = "";
+  try {
+    existing = await fs.readFile(absPath, "utf8");
+  } catch (error) {
+    const e = error as NodeJS.ErrnoException;
+    if (e.code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  const nextContent = content.endsWith("\n") ? content : `${content}\n`;
+  const changed = existing !== nextContent;
+
+  if (!dryRun && changed) {
+    await fs.writeFile(absPath, nextContent, "utf8");
+  }
+
+  return { absPath, changed };
+}
