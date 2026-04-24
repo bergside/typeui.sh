@@ -9,7 +9,7 @@
 Design system skill generator for agentic tools (ie. Claude Code, Open Code, Codex, Cursor, etc)
 ```
 
-[typeui.sh](https://www.typeui.sh) is an open-source command line interface (CLI) that generates, updates, and can download `SKILL.md` or `DESIGN.md` files with design system specifications to instruct agentic tools and LLM's to use a certain design when building interfaces.
+[TypeUI](https://www.typeui.sh) is an open-source command line interface (CLI) that generates, updates, and can download `SKILL.md` or `DESIGN.md` files with design system specifications to instruct agentic tools and LLM's to use a certain design when building interfaces.
 
 ## Getting started
 
@@ -19,9 +19,9 @@ You can start building with TypeUI by using the NPX command:
 npx typeui.sh --help
 ```
 
-## Design systems
+## Design skills
 
-Check out all [design systems](https://typeui.sh/design-skills) that can be pulled into your project.
+Check out all [design skills](https://wwww.typeui.sh/design-skills) that can be pulled into your project. Available in both `DESIGN.md` and `SKILL.md` formats.
 
 ## Available commands
 
