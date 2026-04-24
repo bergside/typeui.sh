@@ -1,13 +1,8 @@
-```
-████████╗██╗   ██╗██████╗ ███████╗██╗   ██╗██╗   ███████╗██╗  ██╗
-╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██║   ██║██║   ██╔════╝██║  ██║
-   ██║    ╚████╔╝ ██████╔╝█████╗  ██║   ██║██║   ███████╗███████║
-   ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ██║   ██║██║   ╚════██║██╔══██║
-   ██║      ██║   ██║     ███████╗╚██████╔╝██║██╗███████║██║  ██║
-   ╚═╝      ╚═╝   ╚═╝     ╚══════╝ ╚═════╝ ╚═╝╚═╝╚══════╝╚═╝  ╚═╝
+# TypeUI - Design skills (`DESIGN.md` and `SKILL.md`) for Claude Design, Google Stitch, Codex, Cursor, and other AI tools
 
-Design system skill generator for agentic tools (ie. Claude Code, Open Code, Codex, Cursor, etc)
-```
+<img width="1200" height="630" alt="og-repo" src="https://github.com/user-attachments/assets/9edcfcc0-2ab3-4eeb-aa35-dae55843acc8" />
+
+<br />
 
 [TypeUI](https://www.typeui.sh) is an open-source command line interface (CLI) that generates, updates, and can download `SKILL.md` or `DESIGN.md` files with design system specifications to instruct agentic tools and LLM's to use a certain design when building interfaces.
 
