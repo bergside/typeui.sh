@@ -1,6 +1,6 @@
 # TypeUI - Design skills for agentic tools
 
-<img width="1200" height="630" alt="og-repo" src="https://github.com/user-attachments/assets/9edcfcc0-2ab3-4eeb-aa35-dae55843acc8" />
+<img width="1448" height="1151" alt="Screenshot 2026-04-28 at 14 24 05" src="https://github.com/user-attachments/assets/b2bb4b43-5e56-4af4-bb28-71e0eb91f75c" />
 
 <br />
 
