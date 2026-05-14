@@ -16,7 +16,7 @@ npx typeui.sh --help
 
 ## Design skills
 
-Check out all [design skills](https://wwww.typeui.sh/design-skills) that can be pulled into your project. Available in both `DESIGN.md` and `SKILL.md` formats.
+Check out all [design skills](https://www.typeui.sh/design-skills) that can be pulled into your project. Available in both `DESIGN.md` and `SKILL.md` formats.
 
 ## Available commands
 
