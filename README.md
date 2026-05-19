@@ -165,13 +165,59 @@ Browse all major UI prompt categories from [TypeUI Prompts](https://www.typeui.s
 
 ## CLI commands
 
-| Command | Description |
-| --- | --- |
-| `generate` | Run interactive prompts, choose `SKILL.md` or `DESIGN.md`, then generate output files. |
-| `update` | Run interactive prompts, choose `SKILL.md` or `DESIGN.md`, then update existing output files. |
-| `pull <slug>` | Pull a registry markdown file from `bergside/awesome-design-skills` (`SKILL.md` -> provider paths, `DESIGN.md` -> project root `DESIGN.md`). |
-| `list` | Show available registry specs from `bergside/awesome-design-skills` (with typeui.sh preview links), then pull one automatically. |
-| `randomize` | Generate a fully randomized local design system and write `SKILL.md` or `DESIGN.md` outputs. |
+All commands run via `npx typeui.sh`. Add `--help` to any command to see its options, and pass `--format design` to write `DESIGN.md` instead of `SKILL.md` (the default).
+
+| | Command | What it does |
+| :---: | :--- | :--- |
+| 🪄 | [`generate`](#generate) | Generate a fresh `SKILL.md` or `DESIGN.md` from interactive prompts. |
+| ✏️ | [`update`](#update) | Re-run prompts and update existing output files in place. |
+| 🎲 | [`randomize`](#randomize) | Generate a fully randomized local design system. |
+| 📚 | [`list`](#list) | Browse available registry specs and pull one automatically. |
+| ⬇️ | [`pull <slug>`](#pull-slug) | Pull a specific registry markdown file by slug. |
+
+### `generate`
+
+Run interactive prompts and generate a fresh `SKILL.md` (default) or `DESIGN.md` file.
+
+```bash
+npx typeui.sh generate
+npx typeui.sh generate --format design
+```
+
+### `update`
+
+Run interactive prompts and update existing output files in place.
+
+```bash
+npx typeui.sh update
+```
+
+### `randomize`
+
+Generate a fully randomized local design system — useful for quickly seeding a starter spec.
+
+```bash
+npx typeui.sh randomize
+npx typeui.sh randomize --format design
+```
+
+### `list`
+
+Browse available registry specs from [`bergside/awesome-design-skills`](https://github.com/bergside/awesome-design-skills) (with `typeui.sh` preview links), then pull one automatically.
+
+```bash
+npx typeui.sh list
+npx typeui.sh list --format design
+```
+
+### `pull <slug>`
+
+Pull a registry markdown file by slug. `SKILL.md` writes to provider paths; `DESIGN.md` writes to the project root.
+
+```bash
+npx typeui.sh pull <slug>
+npx typeui.sh pull <slug> --format design
+```
 
 ## Local development
 
@@ -179,21 +225,14 @@ If you want to use this locally these are the commands you need to run:
 
 ```bash
 npm install
+
 npm run build
 ```
 
-Then use the commands in your terminal:
+Then use the following command instead of `npx` in your terminal:
 
 ```
 node dist/cli.js --help
-node dist/cli.js generate
-node dist/cli.js generate --format design
-node dist/cli.js randomize
-node dist/cli.js randomize --format design
-node dist/cli.js list
-node dist/cli.js pull [slug]
-node dist/cli.js pull [slug] --format design
-node dist/cli.js list --format design
 ```
 
 ## License
