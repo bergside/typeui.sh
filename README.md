@@ -241,7 +241,7 @@ The CLI and public registry is open-source under the MIT License.
 
 ## Pro version
 
-Get access to enhanched design skill files and a private Discord community by getting the [pro version](https://www.typeui.sh/#pricing) and thus supporting our open-source work.
+Get access to enhanched design skill files, UI prompts for layouts and a private Discord community by getting the [pro version](https://www.typeui.sh/#pricing) and thus supporting our open-source work.
 
 ## Sponsors
 
